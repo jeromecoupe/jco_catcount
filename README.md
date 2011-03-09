@@ -2,7 +2,7 @@
 Simple EE2 only plugin returning the number of items in any given category
 
 #Examples:
-	{exp:catcount cat_id="33" status="open|closed" channel="channel"}
+	{exp:jco_catcount cat_id="33" status="open|closed" channel="channel"}
 
 #Parameters:
 

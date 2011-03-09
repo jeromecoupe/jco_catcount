@@ -193,7 +193,7 @@ class Jco_catcount {
 			------------------------------------------------------
 			
 			Examples:
-			{exp:catcount cat_id="33" status="open|closed" channel="channel"}
+			{exp:jco_catcount cat_id="33" status="open|closed" channel="channel"}
 	
 			Returns
 			3
