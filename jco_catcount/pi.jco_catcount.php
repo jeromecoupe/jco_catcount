@@ -169,6 +169,7 @@ class Jco_catcount {
 		
 		//count results found and return number
 		return $this->EE->db->count_all_results();
+		echo $this->EE->db->last_query();
 	}
 	
 	/* --------------------------------------------------------------
