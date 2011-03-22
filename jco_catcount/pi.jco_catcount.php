@@ -69,8 +69,9 @@ class Jco_catcount {
 	{
 		//Get parameters and set defaults if parameter not provided
 		$cat_id = $this->EE->TMPL->fetch_param('cat_id', '');
-    	$status = $this->EE->TMPL->fetch_param('status', 'open');
-    	$channel = $this->EE->TMPL->fetch_param('channel', '');
+		$status = $this->EE->TMPL->fetch_param('status', 'open');
+		$channel = $this->EE->TMPL->fetch_param('channel', '');
+		$site = $this->EE->config->item('site_id');
 		
 		//check cat id
 		if ($cat_id == "")
@@ -137,18 +138,19 @@ class Jco_catcount {
 		$this->EE->db->from('exp_category_posts');
 		$this->EE->db->join('exp_channel_titles', 'exp_category_posts.entry_id = exp_channel_titles.entry_id' );
 		$this->EE->db->join('exp_channels', 'exp_channel_titles.channel_id = exp_channels.channel_id' );
-		$this->EE->db->where('cat_id', $cat_id);
+		$this->EE->db->where('exp_category_posts.cat_id', $cat_id);
+		$this->EE->db->where('exp_channel_titles.site_id', $site);
 		
 		//where part for status
 		if ($status != "")
 		{
 			if ($notclause_status == FALSE)
 			{
-				$this->EE->db->where_in('status', $status);
+				$this->EE->db->where_in('exp_channel_titles.status', $status);
 			}
 			else
 			{
-				$this->EE->db->where_not_in('status', $status);
+				$this->EE->db->where_not_in('exp_channel_titles.status', $status);
 			}
 		}
 		
@@ -157,16 +159,17 @@ class Jco_catcount {
 		{
 			if ($notclause_channel == FALSE)
 			{
-				$this->EE->db->where_in('channel_name', $channel);
+				$this->EE->db->where_in('exp_channels.channel_name', $channel);
 			}
 			else
 			{
-				$this->EE->db->where_not_in('channel_name', $channel);
+				$this->EE->db->where_not_in('exp_channels.channel_name', $channel);
 			}
 		}
 		
 		//count results found and return number
 		return $this->EE->db->count_all_results();
+		echo $this->EE->db->last_query();
 	}
 	
 	/* --------------------------------------------------------------
@@ -214,6 +217,10 @@ class Jco_catcount {
 			channel="mychannel" : Optional
 			Determines the channel of entries you want to count (useful if you use the same category for various channels)
 			You can use not clause: channel="not channel1|channel2"
+			
+			MSM support
+			
+			Added MSM support: only outputs results for the current site
 		
 		<?php
 		$buffer = ob_get_contents();
@@ -227,5 +234,5 @@ class Jco_catcount {
 	}
 
 
-/* End of file pi.category_count.php */ 
-/* Location: ./system/expressionengine/third_party/plugin_name/pi.category_count.php */
+/* End of file pi.jco_catcount.php */ 
+/* Location: ./system/expressionengine/third_party/plugin_name/pi.jco_catcount.php */
