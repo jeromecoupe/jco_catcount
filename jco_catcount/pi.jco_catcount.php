@@ -4,7 +4,7 @@ if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 $plugin_info = array(
   'pi_name' => 'JCO Category Count',
-  'pi_version' =>'1.1',
+  'pi_version' =>'1.2',
   'pi_author' =>'Jerome Coupe',
   'pi_author_url' => 'http://twitter.com/jeromecoupe/',
   'pi_description' => 'Returns the number of entries for a given category.',
@@ -50,7 +50,7 @@ class Jco_catcount {
 	* @return void
 	* method first seen used by Stephen Lewis (https://github.com/experience/you_are_here.ee2_addon)
 	*/
-	function Jco_catcount()
+	public function Jco_catcount()
 	{
 		$this->__construct();
 	}
@@ -62,10 +62,10 @@ class Jco_catcount {
 	/**
 	* Return number of items in category.
 	*
-	* @access	private
-	* @return	integer
+	* @access	public
+	* @return	mixed: integer, boolean
 	*/
-	function Count_catitems()
+	public function Count_catitems()
 	{
 		//Get parameters and set defaults if parameter not provided
 		$cat_id = $this->EE->TMPL->fetch_param('cat_id', '');
@@ -80,21 +80,23 @@ class Jco_catcount {
 		}
 		else
 		{
-			//check that cat_id is numeric
-			if (is_numeric($cat_id))
+			//create cat_id array (explode values if pipe in tag param, assign value)
+			$cat_id = (strpos($cat_id, "|")) ? explode('|', $cat_id) : array($cat_id);
+			
+			//check each category id in array
+			foreach ($cat_id as $value)
 			{
-				//check in DB that the given cat number exists
-				$this->EE->db->select('cat_id');
-				$this->EE->db->from('exp_categories');
-				$this->EE->db->where('cat_id', $cat_id);
-				if ($this->EE->db->count_all_results() == 0)
+				if (is_numeric($value))
 				{
-					return "ERROR:cat_id parameter (".$cat_id.") is not a valid category id";
+					if(!$this->_category_exists($value))
+					{
+						return "ERROR: there is no category with an id of \"".$value."\" in your database";
+					}
 				}
-			}
-			else
-			{
-				return "ERROR:cat_id parameter (".$cat_id.") MUST BE a number";
+				else
+				{
+					return "ERROR: cat_id parameter \"".$value."\" is not a number";
+				}
 			}
 		}
 		
@@ -138,8 +140,10 @@ class Jco_catcount {
 		$this->EE->db->from('exp_category_posts');
 		$this->EE->db->join('exp_channel_titles', 'exp_category_posts.entry_id = exp_channel_titles.entry_id' );
 		$this->EE->db->join('exp_channels', 'exp_channel_titles.channel_id = exp_channels.channel_id' );
-		$this->EE->db->where('exp_category_posts.cat_id', $cat_id);
 		$this->EE->db->where('exp_channel_titles.site_id', $site);
+		
+		//where part for categories
+		$this->EE->db->where_in('exp_category_posts.cat_id', $cat_id);
 		
 		//where part for status
 		if ($status != "")
@@ -170,6 +174,32 @@ class Jco_catcount {
 		//count results found and return number
 		return $this->EE->db->count_all_results();
 		echo $this->EE->db->last_query();
+	}
+	
+	/* --------------------------------------------------------------
+	* PRIVATE FUNCTIONS
+	* ------------------------------------------------------------ */
+	
+	/**
+	* Check if category_id is a number and if it exists in DB
+	*
+	* @access	private
+	* @return	boolean
+	*/
+	private function _category_exists($category_id)
+	{
+		//check in DB that the given cat number exists
+		$this->EE->db->select('cat_id');
+		$this->EE->db->from('exp_categories');
+		$this->EE->db->where('cat_id', $category_id);
+		if ($this->EE->db->count_all_results() == 0)
+		{
+			return FALSE;
+		}
+		else
+		{
+			return TRUE;
+		}
 	}
 	
 	/* --------------------------------------------------------------
@@ -206,8 +236,9 @@ class Jco_catcount {
 			Parameters:
 	
 			cat_id="1" : Mandatory
-			The id for the category that you want to output the number of entries for
+			The ids for the category that you want to output the number of entries for
 			Plugin checks if the given category id exists in DB
+			You can use piped categories like cat_id="32|33"
 	
 			status="open|closed" : Optional
 			Determines the status of entries you want to count.
