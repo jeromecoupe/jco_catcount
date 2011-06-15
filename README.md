@@ -1,5 +1,5 @@
 #Description:
-Simple EE2 only plugin returning the number of items in any given category
+Simple EE2 only plugin returning the number of items in any given categories
 
 #Examples:
 	{exp:jco_catcount cat_id="33" status="open|closed" channel="channel"}
@@ -8,10 +8,10 @@ Simple EE2 only plugin returning the number of items in any given category
 
 #Parameters:
 
-`cat_id="1`
+`cat_id="1" or cat_id="1|2"`
 
 * Mandatory
-* The id for the category that you want to output the number of entries for
+* The id(s) for the category that you want to output the number of entries for. You can use piped category ids if needed.
 * Plugin checks if the given category id exists in DB
 
 `status="open|closed"`

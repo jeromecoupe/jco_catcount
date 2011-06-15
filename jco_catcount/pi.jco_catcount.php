@@ -7,7 +7,7 @@ $plugin_info = array(
   'pi_version' =>'1.2',
   'pi_author' =>'Jerome Coupe',
   'pi_author_url' => 'http://twitter.com/jeromecoupe/',
-  'pi_description' => 'Returns the number of entries for a given category.',
+  'pi_description' => 'Returns the number of entries for a given category or for multiple categories.',
   'pi_usage' => Jco_catcount::usage()
   );
 
@@ -196,10 +196,8 @@ class Jco_catcount {
 		{
 			return FALSE;
 		}
-		else
-		{
-			return TRUE;
-		}
+
+		return TRUE;
 	}
 	
 	/* --------------------------------------------------------------
