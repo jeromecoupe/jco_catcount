@@ -68,15 +68,16 @@ class Jco_catcount {
 	public function Count_catitems()
 	{
 		//Get parameters and set defaults if parameter not provided
-		$cat_id = $this->EE->TMPL->fetch_param('cat_id', '');
+		$cat_id = $this->EE->TMPL->fetch_param('cat_id', FALSE);
 		$status = $this->EE->TMPL->fetch_param('status', 'open');
-		$channel = $this->EE->TMPL->fetch_param('channel', '');
+		$channel = $this->EE->TMPL->fetch_param('channel', FALSE);
 		$site = $this->EE->config->item('site_id');
 		
 		//check cat id
-		if ($cat_id == "")
+		if ($cat_id === FALSE)
 		{
-			return "ERROR: cat_id parameter MUST BE supplied";
+			$this->EE->TMPL->log_item(str_repeat("&nbsp;", 5) . "- JCO CATCOUNT ERROR: cat_id parameter MUST BE supplied");
+			return FALSE;
 		}
 		else
 		{
@@ -90,35 +91,35 @@ class Jco_catcount {
 				{
 					if(!$this->_category_exists($value))
 					{
-						return "ERROR: there is no category with an id of \"".$value."\" in your database";
+						$this->EE->TMPL->log_item(str_repeat("&nbsp;", 5) . "- JCO CATCOUNT ERROR: there is no category with an id of \"".$value."\" in your database");
+						return FALSE;
 					}
 				}
 				else
 				{
-					return "ERROR: cat_id parameter \"".$value."\" is not a number";
+					$this->EE->TMPL->log_item(str_repeat("&nbsp;", 5) . "- JCO CATCOUNT ERROR: cat_id parameter \"".$value."\" is not a number");
+					return FALSE;
 				}
 			}
 		}
 		
 		//Parse status parameter and turn it into an array
-		if ($status != "")
+		
+		//is there a NOT clause ?
+		if (strpos($status, "not") === 0)
 		{
-			//is there a NOT clause ?
-			if (strpos($status, "not") === 0)
-			{
-				$notclause_status = TRUE;
-				$status = substr($status, 4);
-				$status = explode('|', $status);
-			}
-			else
-			{
-				$notclause_status = FALSE;
-				$status = explode('|', $status);
-			}
+			$notclause_status = TRUE;
+			$status = substr($status, 4);
+			$status = explode('|', $status);
+		}
+		else
+		{
+			$notclause_status = FALSE;
+			$status = explode('|', $status);
 		}
 		
 		//Parse channel parameter and turn it into an array
-		if ($channel != "")
+		if ($channel !== FALSE && $channel != "")
 		{
 			//is there a NOT clause ?
 			if (strpos($channel, "not") === 0)
@@ -133,47 +134,48 @@ class Jco_catcount {
 				$channel = explode('|', $channel);
 			}
 		}
+		else
+		{
+			$channel = FALSE;
+			$this->EE->TMPL->log_item(str_repeat("&nbsp;", 5) . "- JCO CATCOUNT WARNING: channel parameter supplied but empty");
+		}
 		
 		//Query
 		//main part
-		$this->EE->db->select('exp_category_posts.entry_id');
-		$this->EE->db->from('exp_category_posts');
-		$this->EE->db->join('exp_channel_titles', 'exp_category_posts.entry_id = exp_channel_titles.entry_id' );
-		$this->EE->db->join('exp_channels', 'exp_channel_titles.channel_id = exp_channels.channel_id' );
-		$this->EE->db->where('exp_channel_titles.site_id', $site);
+		$this->EE->db->select('category_posts.entry_id');
+		$this->EE->db->from('category_posts');
+		$this->EE->db->join('channel_titles', 'category_posts.entry_id = channel_titles.entry_id' );
+		$this->EE->db->join('channels', 'channel_titles.channel_id = channels.channel_id' );
+		$this->EE->db->where('channel_titles.site_id', $site);
 		
 		//where part for categories
-		$this->EE->db->where_in('exp_category_posts.cat_id', $cat_id);
+		$this->EE->db->where_in('category_posts.cat_id', $cat_id);
 		
 		//where part for status
-		if ($status != "")
+		if ($notclause_status === FALSE)
 		{
-			if ($notclause_status == FALSE)
-			{
-				$this->EE->db->where_in('exp_channel_titles.status', $status);
-			}
-			else
-			{
-				$this->EE->db->where_not_in('exp_channel_titles.status', $status);
-			}
+			$this->EE->db->where_in('channel_titles.status', $status);
+		}
+		else
+		{
+			$this->EE->db->where_not_in('channel_titles.status', $status);
 		}
 		
 		//where part for channel
-		if ($channel != "")
+		if ($channel !== FALSE)
 		{
-			if ($notclause_channel == FALSE)
+			if ($notclause_channel === FALSE)
 			{
-				$this->EE->db->where_in('exp_channels.channel_name', $channel);
+				$this->EE->db->where_in('channels.channel_name', $channel);
 			}
 			else
 			{
-				$this->EE->db->where_not_in('exp_channels.channel_name', $channel);
+				$this->EE->db->where_not_in('channels.channel_name', $channel);
 			}
 		}
 		
 		//count results found and return number
 		return $this->EE->db->count_all_results();
-		echo $this->EE->db->last_query();
 	}
 	
 	/* --------------------------------------------------------------
@@ -190,7 +192,7 @@ class Jco_catcount {
 	{
 		//check in DB that the given cat number exists
 		$this->EE->db->select('cat_id');
-		$this->EE->db->from('exp_categories');
+		$this->EE->db->from('categories');
 		$this->EE->db->where('cat_id', $category_id);
 		if ($this->EE->db->count_all_results() == 0)
 		{
