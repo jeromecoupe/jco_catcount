@@ -4,7 +4,7 @@ if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 $plugin_info = array(
   'pi_name' => 'JCO Category Count',
-  'pi_version' =>'1.2',
+  'pi_version' =>'1.21',
   'pi_author' =>'Jerome Coupe',
   'pi_author_url' => 'http://twitter.com/jeromecoupe/',
   'pi_description' => 'Returns the number of entries for a given category or for multiple categories.',
@@ -68,12 +68,13 @@ class Jco_catcount {
 	public function Count_catitems()
 	{
 		//Get parameters and set defaults if parameter not provided
-		$cat_id = $this->EE->TMPL->fetch_param('cat_id', FALSE);
-		$status = $this->EE->TMPL->fetch_param('status', 'open');
-		$channel = $this->EE->TMPL->fetch_param('channel', FALSE);
-		$site = $this->EE->config->item('site_id');
+		$cat_id 	= $this->EE->TMPL->fetch_param('cat_id', FALSE);
+		$status 	= $this->EE->TMPL->fetch_param('status', 'open');
+		$channel 	= $this->EE->TMPL->fetch_param('channel', '');
+		$site 		= $this->EE->config->item('site_id');
 
-		//check cat id
+		/*check cat id
+		-----------------------------------------*/
 		if ($cat_id === FALSE)
 		{
 			$this->EE->TMPL->log_item(str_repeat("&nbsp;", 5) . "- JCO CATCOUNT ERROR: cat_id parameter MUST BE supplied");
@@ -103,36 +104,37 @@ class Jco_catcount {
 			}
 		}
 
-		//Parse status parameter and turn it into an array
-
+		/*check status
+		-----------------------------------------*/
 		//is there a NOT clause ?
 		if (strpos($status, "not") === 0)
 		{
 			$notclause_status = TRUE;
 			$status = substr($status, 4);
-			$status = explode('|', $status);
 		}
 		else
 		{
 			$notclause_status = FALSE;
-			$status = explode('|', $status);
 		}
 
-		//Parse channel parameter and turn it into an array
-		if ($channel !== FALSE && $channel != "")
+		$status = explode('|', $status);
+
+		/*check channel
+		-----------------------------------------*/
+		if ($channel != "")
 		{
 			//is there a NOT clause ?
 			if (strpos($channel, "not") === 0)
 			{
 				$notclause_channel = TRUE;
 				$channel = substr($channel, 4);
-				$channel = explode('|', $channel);
 			}
 			else
 			{
 				$notclause_channel = FALSE;
-				$channel = explode('|', $channel);
 			}
+
+			$channel = explode('|', $channel);
 		}
 		else
 		{
@@ -140,13 +142,14 @@ class Jco_catcount {
 			$this->EE->TMPL->log_item(str_repeat("&nbsp;", 5) . "- JCO CATCOUNT WARNING: channel parameter supplied but empty");
 		}
 
-		//Query
+		/*Build query
+		-----------------------------------------*/
 		//main part
-		$this->EE->db->select('category_posts.entry_id');
-		$this->EE->db->from('category_posts');
-		$this->EE->db->join('channel_titles', 'category_posts.entry_id = channel_titles.entry_id' );
-		$this->EE->db->join('channels', 'channel_titles.channel_id = channels.channel_id' );
-		$this->EE->db->where('channel_titles.site_id', $site);
+		$this->EE->db->select('category_posts.entry_id')
+					 ->from('category_posts')
+					 ->join('channel_titles', 'category_posts.entry_id = channel_titles.entry_id' )
+					 ->join('channels', 'channel_titles.channel_id = channels.channel_id' )
+					 ->where('channel_titles.site_id', $site);
 
 		//where part for categories
 		$this->EE->db->where_in('category_posts.cat_id', $cat_id);
@@ -191,9 +194,9 @@ class Jco_catcount {
 	private function _category_exists($category_id)
 	{
 		//check in DB that the given cat number exists
-		$this->EE->db->select('cat_id');
-		$this->EE->db->from('categories');
-		$this->EE->db->where('cat_id', $category_id);
+		$this->EE->db->select('cat_id')
+					 ->from('categories')
+					 ->where('cat_id', $category_id);
 		if ($this->EE->db->count_all_results() == 0)
 		{
 			return FALSE;
