@@ -13,7 +13,7 @@ $plugin_info = array(
 
 
 class Jco_catcount {
-	
+
 	/* --------------------------------------------------------------
 	* RETURNED DATA
 	* ------------------------------------------------------------ */
@@ -24,7 +24,7 @@ class Jco_catcount {
 	* @var string
 	*/
 	var $return_data = '';
-	
+
 	/* --------------------------------------------------------------
 	* CONSTRUCTOR
 	* ------------------------------------------------------------ */
@@ -40,8 +40,8 @@ class Jco_catcount {
 		$this->EE =& get_instance();
 		$this->return_data = $this->count_catitems();
 	}
-	
-	
+
+
 	/**
 	* Annoyingly, the supposedly PHP5-only EE2 still requires this PHP4
 	* constructor in order to function.
@@ -54,11 +54,11 @@ class Jco_catcount {
 	{
 		$this->__construct();
 	}
-	
+
 	/* --------------------------------------------------------------
 	* USED FUNCTIONS
 	* ------------------------------------------------------------ */
-	
+
 	/**
 	* Return number of items in category.
 	*
@@ -72,7 +72,7 @@ class Jco_catcount {
 		$status = $this->EE->TMPL->fetch_param('status', 'open');
 		$channel = $this->EE->TMPL->fetch_param('channel', FALSE);
 		$site = $this->EE->config->item('site_id');
-		
+
 		//check cat id
 		if ($cat_id === FALSE)
 		{
@@ -83,7 +83,7 @@ class Jco_catcount {
 		{
 			//create cat_id array (explode values if pipe in tag param, assign value)
 			$cat_id = (strpos($cat_id, "|")) ? explode('|', $cat_id) : array($cat_id);
-			
+
 			//check each category id in array
 			foreach ($cat_id as $value)
 			{
@@ -102,9 +102,9 @@ class Jco_catcount {
 				}
 			}
 		}
-		
+
 		//Parse status parameter and turn it into an array
-		
+
 		//is there a NOT clause ?
 		if (strpos($status, "not") === 0)
 		{
@@ -117,7 +117,7 @@ class Jco_catcount {
 			$notclause_status = FALSE;
 			$status = explode('|', $status);
 		}
-		
+
 		//Parse channel parameter and turn it into an array
 		if ($channel !== FALSE && $channel != "")
 		{
@@ -139,7 +139,7 @@ class Jco_catcount {
 			$channel = FALSE;
 			$this->EE->TMPL->log_item(str_repeat("&nbsp;", 5) . "- JCO CATCOUNT WARNING: channel parameter supplied but empty");
 		}
-		
+
 		//Query
 		//main part
 		$this->EE->db->select('category_posts.entry_id');
@@ -147,10 +147,10 @@ class Jco_catcount {
 		$this->EE->db->join('channel_titles', 'category_posts.entry_id = channel_titles.entry_id' );
 		$this->EE->db->join('channels', 'channel_titles.channel_id = channels.channel_id' );
 		$this->EE->db->where('channel_titles.site_id', $site);
-		
+
 		//where part for categories
 		$this->EE->db->where_in('category_posts.cat_id', $cat_id);
-		
+
 		//where part for status
 		if ($notclause_status === FALSE)
 		{
@@ -160,7 +160,7 @@ class Jco_catcount {
 		{
 			$this->EE->db->where_not_in('channel_titles.status', $status);
 		}
-		
+
 		//where part for channel
 		if ($channel !== FALSE)
 		{
@@ -173,15 +173,15 @@ class Jco_catcount {
 				$this->EE->db->where_not_in('channels.channel_name', $channel);
 			}
 		}
-		
+
 		//count results found and return number
 		return $this->EE->db->count_all_results();
 	}
-	
+
 	/* --------------------------------------------------------------
 	* PRIVATE FUNCTIONS
 	* ------------------------------------------------------------ */
-	
+
 	/**
 	* Check if category_id is a number and if it exists in DB
 	*
@@ -201,7 +201,7 @@ class Jco_catcount {
 
 		return TRUE;
 	}
-	
+
 	/* --------------------------------------------------------------
 	* PLUGIN USAGE
 	* ------------------------------------------------------------ */
@@ -216,47 +216,45 @@ class Jco_catcount {
 	 */
 	function usage()
 	{
-		ob_start(); 
+		ob_start();
 		?>
 
 			Description:
-	
+
 			Returns the number of entries for a given category.
-	
+
 			------------------------------------------------------
-			
+
 			Examples:
 			{exp:jco_catcount cat_id="33" status="open|closed" channel="channel"}
-	
+
 			Returns
 			3
-	
+
 			------------------------------------------------------
-			
+
 			Parameters:
-	
+
 			cat_id="1" : Mandatory
 			The ids for the category that you want to output the number of entries for
 			Plugin checks if the given category id exists in DB
 			You can use piped categories like cat_id="32|33"
-	
+
 			status="open|closed" : Optional
 			Determines the status of entries you want to count.
 			Default is "open"
 			You can use not clause: status="not closed"
-	
+
 			channel="mychannel" : Optional
 			Determines the channel of entries you want to count (useful if you use the same category for various channels)
 			You can use not clause: channel="not channel1|channel2"
-			
-			MSM support
-			
-			Added MSM support: only outputs results for the current site
-		
+
+			MSM support: only outputs results for the current site
+
 		<?php
 		$buffer = ob_get_contents();
 
-		ob_end_clean(); 
+		ob_end_clean();
 
 		return $buffer;
 	}
@@ -265,5 +263,5 @@ class Jco_catcount {
 	}
 
 
-/* End of file pi.jco_catcount.php */ 
+/* End of file pi.jco_catcount.php */
 /* Location: ./system/expressionengine/third_party/plugin_name/pi.jco_catcount.php */
