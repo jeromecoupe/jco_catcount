@@ -4,7 +4,7 @@ if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 $plugin_info = array(
   'pi_name' => 'JCO Category Count',
-  'pi_version' =>'1.2',
+  'pi_version' =>'1.3',
   'pi_author' =>'Jerome Coupe',
   'pi_author_url' => 'http://twitter.com/jeromecoupe/',
   'pi_description' => 'Returns the number of entries for a given category or for multiple categories.',
@@ -68,10 +68,10 @@ class Jco_catcount {
 	public function Count_catitems()
 	{
 		//Get parameters and set defaults if parameter not provided
-		$cat_id = $this->EE->TMPL->fetch_param('cat_id', FALSE);
-		$status = $this->EE->TMPL->fetch_param('status', 'open');
-		$channel = $this->EE->TMPL->fetch_param('channel', '');
-		$site = $this->EE->TMPL->fetch_param('site_id', $this->EE->config->item('site_id'));
+		$cat_id 	= $this->EE->TMPL->fetch_param('cat_id', FALSE);
+		$status 	= $this->EE->TMPL->fetch_param('status', 'open');
+		$channel 	= $this->EE->TMPL->fetch_param('channel', '');
+		$site 		= $this->EE->TMPL->fetch_param('site_id', $this->EE->config->item('site_id'));
 
 		/*check cat id
 		-----------------------------------------*/
@@ -179,10 +179,10 @@ class Jco_catcount {
 		/*Build Query
 		-----------------------------------------*/
 		//main part
-		$this->EE->db->select('category_posts.entry_id');
-		$this->EE->db->from('category_posts');
-		$this->EE->db->join('channel_titles', 'category_posts.entry_id = channel_titles.entry_id' );
-		$this->EE->db->join('channels', 'channel_titles.channel_id = channels.channel_id' );
+		$this->EE->db->select('category_posts.entry_id')
+					 ->from('category_posts')
+					 ->join('channel_titles', 'category_posts.entry_id = channel_titles.entry_id' )
+					 ->join('channels', 'channel_titles.channel_id = channels.channel_id' );
 
 		//where part for sites
 		$this->EE->db->where_in('channel_titles.site_id', $site);
@@ -230,9 +230,9 @@ class Jco_catcount {
 	private function _category_exists($category_id)
 	{
 		//check in DB that the given cat number exists
-		$this->EE->db->select('cat_id');
-		$this->EE->db->from('categories');
-		$this->EE->db->where('cat_id', $category_id);
+		$this->EE->db->select('cat_id')
+					 ->from('categories')
+					 ->where('cat_id', $category_id);
 		if ($this->EE->db->count_all_results() == 0)
 		{
 			return FALSE;
@@ -250,9 +250,9 @@ class Jco_catcount {
 	private function _site_exists($site)
 	{
 		//check in DB that the given cat number exists
-		$this->EE->db->select('site_id');
-		$this->EE->db->from('sites');
-		$this->EE->db->where('site_id', $site);
+		$this->EE->db->select('site_id')
+					 ->from('sites')
+					 ->where('site_id', $site);
 		if ($this->EE->db->count_all_results() == 0)
 		{
 			return FALSE;
@@ -270,9 +270,9 @@ class Jco_catcount {
 	private function _channel_name_exists($channel)
 	{
 		//check in DB that the given cat number exists
-		$this->EE->db->select('channel_name');
-		$this->EE->db->from('channels');
-		$this->EE->db->where('channel_name', $channel);
+		$this->EE->db->select('channel_name')
+					 ->from('channels')
+					 ->where('channel_name', $channel);
 		if ($this->EE->db->count_all_results() == 0)
 		{
 			return FALSE;
