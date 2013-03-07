@@ -106,7 +106,6 @@ class Jco_catcount {
 
 		/*check site id
 		-----------------------------------------*/
-
 		//create site array (explode values if pipe in tag param, assign value)
 		$site = (strpos($site, "|")) ? explode('|', $site) : array($site);
 
@@ -131,7 +130,6 @@ class Jco_catcount {
 
 		/*check status parameter
 		-----------------------------------------*/
-
 		//is there a NOT clause ?
 		if (strpos($status, "not") === 0)
 		{
@@ -178,7 +176,8 @@ class Jco_catcount {
 			$channel = FALSE;
 		}
 
-		//Query
+		/*Build Query
+		-----------------------------------------*/
 		//main part
 		$this->EE->db->select('category_posts.entry_id');
 		$this->EE->db->from('category_posts');
